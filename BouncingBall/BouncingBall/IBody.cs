@@ -27,13 +27,13 @@ namespace BouncingBall
     void Draw(SpriteBatch spriteBatch);
   }
 
-  public interface IUserControlled : ISprite
+  public interface IUserSprite : ISprite
   {
     Vector2 Direction { get; set; }
     void Move(GameTime gametime);
   }
 
-  public interface IAiControlled : ISprite
+  public interface IAiSprite : ISprite
   {
     Vector2 InitialVelocity { get; }
     void Move(GameTime gametime);
@@ -80,13 +80,16 @@ namespace BouncingBall
     }
 
     public void CheckCollision(ISprite another)
-    { }
+    { 
+      
+    }
 
     public void CheckCollisionWithEnclosure()
     {
       var normal = GetNormalWithWall();
       if (normal != Vector2.Zero)
       {
+        // formula: V = (-2 x (V.N) x N) + V
         Velocity = -2 * (Vector2.Dot(Velocity, normal) * normal) + Velocity; 
       }
     }
@@ -121,7 +124,7 @@ namespace BouncingBall
     }
   }
 
-  public class Enemy : Ball, IAiControlled
+  public class Enemy : Ball, IAiSprite
   {
     private static Random r = new Random();
 

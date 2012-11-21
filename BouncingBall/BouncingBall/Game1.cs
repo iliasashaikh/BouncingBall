@@ -18,8 +18,9 @@ namespace BouncingBall
   {
     GraphicsDeviceManager graphics;
     SpriteBatch spriteBatch;
-   
-    Enemy enemy = null;
+
+    List<IAiSprite> sprites = new List<IAiSprite>();
+
     Enclosure enclosure = null;
 
     public Game1()
@@ -49,12 +50,16 @@ namespace BouncingBall
     {
       // Create a new SpriteBatch, which can be used to draw textures.
       spriteBatch = new SpriteBatch(GraphicsDevice);
-      var enemyImage = Content.Load<Texture2D>("glassBall");
       var windowWidth = graphics.GraphicsDevice.Viewport.Width;
       var windowHeight = graphics.GraphicsDevice.Viewport.Height;
       
       enclosure = new Enclosure(windowWidth, windowHeight);
-      enemy = new Enemy(enemyImage, new Vector2(windowWidth / 2, windowHeight / 2), enclosure, 100);
+      var enemyGlassBall = new Enemy(Content.Load<Texture2D>("glassBall"), new Vector2(windowWidth / 2, windowHeight / 2), enclosure, 100);
+      var enemyHollowBall = new Enemy(Content.Load<Texture2D>("hollowBall"), new Vector2(windowWidth / 2, windowHeight / 2), enclosure, 250);
+
+      sprites.Add(enemyGlassBall);
+      sprites.Add(enemyHollowBall);
+
       // TODO: use this.Content to load your game content here
     }
 
@@ -74,7 +79,10 @@ namespace BouncingBall
     /// <param name="gameTime">Provides a snapshot of timing values.</param>
     protected override void Update(GameTime gameTime)
     {
-      enemy.Move(gameTime);
+      foreach (var sprite in sprites)
+      {
+        sprite.Move(gameTime);
+      }
       base.Update(gameTime);
     }
 
@@ -87,7 +95,10 @@ namespace BouncingBall
       GraphicsDevice.Clear(Color.CornflowerBlue);
 
       spriteBatch.Begin();
-      enemy.Draw(spriteBatch);
+      foreach (var sprite in sprites)
+      {
+        sprite.Draw(spriteBatch);
+      }
       spriteBatch.End();
 
       
