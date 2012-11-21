@@ -1,0 +1,24 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 11.00
+# Visual Studio 2010
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BouncingBall", "BouncingBall\BouncingBall\BouncingBall.csproj", "{3ACCDCF4-8DE6-4804-96B4-4B3D6ADDEB15}"
+EndProject
+Project("{96E2B04D-8817-42C6-938A-82C39BA4D311}") = "BouncingBallContent", "BouncingBall\BouncingBallContent\BouncingBallContent.contentproj", "{EEAC1939-75C6-4B08-A5D0-0B31FEC41EEF}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|x86 = Debug|x86
+		Release|x86 = Release|x86
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{3ACCDCF4-8DE6-4804-96B4-4B3D6ADDEB15}.Debug|x86.ActiveCfg = Debug|x86
+		{3ACCDCF4-8DE6-4804-96B4-4B3D6ADDEB15}.Debug|x86.Build.0 = Debug|x86
+		{3ACCDCF4-8DE6-4804-96B4-4B3D6ADDEB15}.Release|x86.ActiveCfg = Release|x86
+		{3ACCDCF4-8DE6-4804-96B4-4B3D6ADDEB15}.Release|x86.Build.0 = Release|x86
+		{EEAC1939-75C6-4B08-A5D0-0B31FEC41EEF}.Debug|x86.ActiveCfg = Debug|x86
+		{EEAC1939-75C6-4B08-A5D0-0B31FEC41EEF}.Release|x86.ActiveCfg = Release|x86
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal
