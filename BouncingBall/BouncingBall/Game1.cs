@@ -21,7 +21,7 @@ namespace BouncingBall
 
     List<IAiSprite> sprites = new List<IAiSprite>();
 
-    Enclosure enclosure = null;
+    RectangleEnclosure enclosure = null;
 
     public Game1()
     {
@@ -53,7 +53,7 @@ namespace BouncingBall
       var windowWidth = graphics.GraphicsDevice.Viewport.Width;
       var windowHeight = graphics.GraphicsDevice.Viewport.Height;
       
-      enclosure = new Enclosure(windowWidth, windowHeight);
+      enclosure = new RectangleEnclosure(graphics.GraphicsDevice.Viewport.Bounds);
       var enemyGlassBall = new Enemy(Content.Load<Texture2D>("glassBall"), new Vector2(windowWidth / 2, windowHeight / 2), enclosure, 100);
       var enemyHollowBall = new Enemy(Content.Load<Texture2D>("hollowBall"), new Vector2(windowWidth / 2, windowHeight / 2), enclosure, 250);
 

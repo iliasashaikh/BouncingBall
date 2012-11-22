@@ -12,8 +12,7 @@ namespace BouncingBall
 
   public interface IEnclosure
   {
-    int Width { get; }
-    int Height { get; }
+    void CheckCollision(ISprite sprite);
   }
 
   public interface ISprite : IBody
@@ -21,7 +20,8 @@ namespace BouncingBall
     Vector2 Position { get; set; }
     int Speed { get; set; }
     Vector2 Velocity { get; set; }
-    IEnclosure Bounds { get; }
+    IEnclosure MovementBounds { get; }
+    Rectangle BoundingBox { get; }
     void CheckCollision(ISprite another);
     void CheckCollisionWithEnclosure();
     void Draw(SpriteBatch spriteBatch);
@@ -39,33 +39,87 @@ namespace BouncingBall
     void Move(GameTime gametime);
   }
 
+  /// <summary>
+  /// A basic rectangular enclosure (I will can implement more complex enclosures later)
+  /// </summary>
+  public class RectangleEnclosure : IEnclosure
+  {
+    public int Width { get; private set; }
+    public int Height { get; private set; }
+
+    private Rectangle bounds;
+    public RectangleEnclosure(Rectangle bounds)
+    {
+      this.bounds = bounds;
+    }
+
+    public void CheckCollision(ISprite sprite)
+    {
+      if (IsTouching(sprite))
+      {
+        var normal = GetNormalWithWall(sprite.BoundingBox);
+        // formula: V = (-2 x (V.N) x N) + V
+        var velocity = sprite.Velocity;
+        velocity = -2 * (Vector2.Dot(velocity, normal) * normal) + velocity;
+        sprite.Velocity = velocity;
+      }
+    }
+
+    private bool IsTouching(ISprite sprite)
+    {
+      return !bounds.Contains(sprite.BoundingBox);
+    }
+
+    /// <summary>
+    /// Get the normal vector when the ball is touching a wall, if not touching return Vector2.Zero
+    /// Assumption is that the bounding rectangle is not at an angle with the monitor.
+    /// </summary>
+    /// <returns></returns>
+    private Vector2 GetNormalWithWall(Rectangle boundingBox)
+    {
+      Vector2 normal = Vector2.Zero;
+      if (boundingBox.Left <= bounds.Left) // touching left wall
+        normal = new Vector2(-1, 0);
+
+      if (boundingBox.Right >= bounds.Right) // touching right wall
+        normal = new Vector2(1, 0);
+
+      if (boundingBox.Top <= bounds.Top) // touching top wall
+        normal = new Vector2(0, -1);
+
+      if (boundingBox.Bottom >= bounds.Bottom) // touching top wall
+        normal = new Vector2(0, 1);
+
+      return normal; 
+    }
+  }
+
   public class Ball : ISprite
   {
     public Vector2 Position { get; set; }
     public int Speed { get; set; }
     public Vector2 Velocity { get; set; }
+    public IEnclosure MovementBounds { get; private set; } // ennclosure
 
     protected Texture2D Image { get; private set; }
-    public IEnclosure Bounds { get; private set; } // ennclosure
-    protected Rectangle BoundingBox { get; private set; } // rectangle for the enclosure
     protected float Radius { get; private set; }
 
     protected Vector2 Center 
     { 
       get
       {
-        var x = Position.X + Image.Width / 2;
-        var y = Position.Y + Image.Height / 2;
+        var x = Position.X + Radius;
+        var y = Position.Y + Radius;
 
         return new Vector2(x, y);
       }
     }
 
-    protected Rectangle BallBox // bounding rectangle for the image
+    public Rectangle BoundingBox // bounding rectangle for the image
     { 
       get
       {
-        var r = new Rectangle((int)(Center.X - Radius),(int)(Center.Y - Radius),(int)(Radius * 2),(int)(Radius * 2));
+        var r = new Rectangle((int)Position.X, (int)Position.Y ,(int)(Radius * 2),(int)(Radius * 2));
         return r;
       }
     } 
@@ -74,8 +128,7 @@ namespace BouncingBall
     {
       this.Image = image;
       this.Position = initialPosition;
-      this.Bounds = bounds;
-      this.BoundingBox = new Rectangle(0, 0, bounds.Width, bounds.Height);
+      this.MovementBounds = bounds;
       this.Radius = image.Width / 2;
     }
 
@@ -86,37 +139,10 @@ namespace BouncingBall
 
     public void CheckCollisionWithEnclosure()
     {
-      var normal = GetNormalWithWall();
-      if (normal != Vector2.Zero)
-      {
-        // formula: V = (-2 x (V.N) x N) + V
-        Velocity = -2 * (Vector2.Dot(Velocity, normal) * normal) + Velocity; 
-      }
+      MovementBounds.CheckCollision(this);
     }
 
-    /// <summary>
-    /// Get the normal vector when the ball is touching a wall, if not touching return Vector2.Zero
-    /// Assumption is that the bounding rectangle is not at an angle with the monitor.
-    /// </summary>
-    /// <returns></returns>
-    protected Vector2 GetNormalWithWall()
-    {
-      Vector2 normal = Vector2.Zero;
-      if (BallBox.Left <= BoundingBox.Left) // touching left wall
-        normal = new Vector2(-1, 0);
-      
-      if (BallBox.Right >= BoundingBox.Right) // touching right wall
-        normal = new Vector2(1, 0);
 
-      if (BallBox.Top <= BoundingBox.Top) // touching top wall
-        normal = new Vector2(0, -1);
-
-      if (BallBox.Bottom >= BoundingBox.Bottom) // touching top wall
-        normal = new Vector2(0, 1);
-
-      return normal;
-      // TODO check for corner collisions
-    }
 
     public void Draw(SpriteBatch spriteBatch)
     {
@@ -146,17 +172,6 @@ namespace BouncingBall
     }
   }
 
-  public class Enclosure : IEnclosure
-  {
-    public int Width { get; private set; }
-    public int Height { get; private set; }
-    
-    public Enclosure(int width, int height)
-    {
-      this.Width = width;
-      this.Height = height;
-    }
-  }
 
 
 }
