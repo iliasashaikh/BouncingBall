@@ -18,10 +18,13 @@ namespace BouncingBall
   public interface ISprite : IBody
   {
     Vector2 Position { get; set; }
-    int Speed { get; set; }
     Vector2 Velocity { get; set; }
+    int Speed { get; }
+    int Mass { get; } 
+    
     IEnclosure MovementBounds { get; }
     Rectangle BoundingBox { get; }
+
     void CheckCollision(ISprite another);
     void CheckCollisionWithEnclosure();
     void Draw(SpriteBatch spriteBatch);
@@ -79,16 +82,16 @@ namespace BouncingBall
     {
       Vector2 normal = Vector2.Zero;
       if (boundingBox.Left <= bounds.Left) // touching left wall
-        normal = new Vector2(-1, 0);
+        normal += new Vector2(-1, 0);
 
       if (boundingBox.Right >= bounds.Right) // touching right wall
-        normal = new Vector2(1, 0);
+        normal += new Vector2(1, 0);
 
       if (boundingBox.Top <= bounds.Top) // touching top wall
-        normal = new Vector2(0, -1);
+        normal += new Vector2(0, -1);
 
       if (boundingBox.Bottom >= bounds.Bottom) // touching top wall
-        normal = new Vector2(0, 1);
+        normal += new Vector2(0, 1);
 
       return normal; 
     }
@@ -100,9 +103,12 @@ namespace BouncingBall
     public int Speed { get; set; }
     public Vector2 Velocity { get; set; }
     public IEnclosure MovementBounds { get; private set; } // ennclosure
+    public int Mass { get; private set; }
 
     protected Texture2D Image { get; private set; }
     protected float Radius { get; private set; }
+
+    protected List<ISprite> AllSprites { get; private set; }
 
     protected Vector2 Center 
     { 
@@ -124,17 +130,73 @@ namespace BouncingBall
       }
     } 
 
-    public Ball(Texture2D image, Vector2 initialPosition, IEnclosure bounds)
+    public Ball(Texture2D image, Vector2 initialPosition, IEnclosure bounds, int mass, List<ISprite> allSprites)
     {
       this.Image = image;
       this.Position = initialPosition;
       this.MovementBounds = bounds;
       this.Radius = image.Width / 2;
+      this.Mass = mass;
+      this.AllSprites = allSprites;
     }
 
     public void CheckCollision(ISprite another)
-    { 
-      
+    {
+      /*
+       * calculation (ref - http://en.wikipedia.org/wiki/Elastic_collision, http://www.vobarian.com/collisions/2dcollisions2.pdf)
+       * -----------
+       * Va, Vb -> original velocities
+       * Ma, Mb -> original masses
+       * 
+       * 1. calculate the collision normal & tangential vectors
+       * N = Normalise(Va - Vb) 
+       * T = Vector(N.x, -N.y)
+       * 
+       * 2. split each vector into its normal and tangential components around the normal vector
+       * Van = Va.N
+       * Vat = Va.T
+       * 
+       * 3. compute the new normal vector post an elastic collision
+       * Van' = [Van x (Ma - Mb) + 2 x Mb x Vbn] / [Ma + Mb]
+       * Vbn' = [Vbn x (Mb - Ma) + 2 x Ma x Van] / [Ma + Mb]
+       * 
+       * 4. add the normal and tangential vectors to get the final new velocities
+       * Vaf = Van' + Vat
+       * Vbf = Vbn' + Vbt
+       */
+
+      if ((this.Center - ((Ball)another).Center).Length() > (this.Radius + ((Ball)another).Radius))
+        return;
+
+      var va = this.Velocity;
+      var vb = another.Velocity;
+
+      var ma = this.Mass;
+      var mb = another.Mass;
+
+      var normal = (this.Center - ((Ball)another).Center);
+      if (normal == Vector2.Zero)
+      {
+        normal = new Vector2(1, 1);
+      }
+      normal.Normalize();
+
+      var tangential = new Vector2(-1 * normal.Y, normal.X);
+
+      var van = Vector2.Dot(va, normal);
+      var vbn = Vector2.Dot(vb, normal);
+
+      var vat = Vector2.Dot(va, tangential) * tangential;
+      var vbt = Vector2.Dot(vb, tangential) * tangential;
+
+      var van_ = (((van * (ma - mb)) + (2 * mb * vbn)) / (ma + mb)) * normal;
+      var vbn_ = (((vbn * (mb - ma)) + (2 * ma * van)) / (ma + mb)) * normal;
+
+      var vaf = van_ + vat;
+      var vbf = vbn_ + vbt;
+
+      this.Velocity = vaf;
+      another.Velocity = vbf;
     }
 
     public void CheckCollisionWithEnclosure()
@@ -154,8 +216,8 @@ namespace BouncingBall
   {
     private static Random r = new Random();
 
-    public Enemy(Texture2D image, Vector2 initialPosition, IEnclosure bounds, int speed)
-      :base(image,initialPosition,bounds)
+    public Enemy(Texture2D image, Vector2 initialPosition, IEnclosure bounds, int speed, int mass, List<ISprite> allSprites)
+      :base(image,initialPosition,bounds,mass, allSprites)
     {
       this.Speed = speed;
       this.InitialVelocity = new Vector2(r.Next(-1, -1), r.Next(-1, -1));
@@ -167,6 +229,12 @@ namespace BouncingBall
 
     public void Move(GameTime gametime)
     {
+      foreach (var sprite in AllSprites)
+      {
+        if (sprite == this) // cannot collide with self.
+          continue;
+        CheckCollision(sprite);
+      }
       CheckCollisionWithEnclosure();
       this.Position += Velocity * (float)gametime.ElapsedGameTime.TotalSeconds;
     }

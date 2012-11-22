@@ -19,7 +19,7 @@ namespace BouncingBall
     GraphicsDeviceManager graphics;
     SpriteBatch spriteBatch;
 
-    List<IAiSprite> sprites = new List<IAiSprite>();
+    List<ISprite> sprites = new List<ISprite>();
 
     RectangleEnclosure enclosure = null;
 
@@ -54,8 +54,8 @@ namespace BouncingBall
       var windowHeight = graphics.GraphicsDevice.Viewport.Height;
       
       enclosure = new RectangleEnclosure(graphics.GraphicsDevice.Viewport.Bounds);
-      var enemyGlassBall = new Enemy(Content.Load<Texture2D>("glassBall"), new Vector2(windowWidth / 2, windowHeight / 2), enclosure, 100);
-      var enemyHollowBall = new Enemy(Content.Load<Texture2D>("hollowBall"), new Vector2(windowWidth / 2, windowHeight / 2), enclosure, 250);
+      var enemyGlassBall = new Enemy(Content.Load<Texture2D>("glassBall"), new Vector2(graphics.GraphicsDevice.Viewport.X, graphics.GraphicsDevice.Viewport.Y), enclosure, 50, 2, sprites);
+      var enemyHollowBall = new Enemy(Content.Load<Texture2D>("hollowBall"), new Vector2(windowWidth / 2, windowHeight / 2), enclosure, 50,2, sprites);
 
       sprites.Add(enemyGlassBall);
       sprites.Add(enemyHollowBall);
@@ -81,7 +81,9 @@ namespace BouncingBall
     {
       foreach (var sprite in sprites)
       {
-        sprite.Move(gameTime);
+        var enemy = sprite as IAiSprite;
+        if (enemy != null)
+          enemy.Move(gameTime);
       }
       base.Update(gameTime);
     }
