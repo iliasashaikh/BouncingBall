@@ -12,11 +12,14 @@ namespace BouncingBall
 
   public interface IEnclosure
   {
+    int Width { get; }
+    int Height { get; }
     void CheckCollision(ISprite sprite);
   }
 
   public interface ISprite : IBody
   {
+    Texture2D Image { get;  }
     Vector2 Position { get; set; }
     Vector2 Velocity { get; set; }
     int Speed { get; }
@@ -47,10 +50,11 @@ namespace BouncingBall
   /// </summary>
   public class RectangleEnclosure : IEnclosure
   {
-    public int Width { get; private set; }
-    public int Height { get; private set; }
-
+    public int Width { get { return bounds.Width; } }
+    public int Height { get { return bounds.Height; } }
+    
     private Rectangle bounds;
+
     public RectangleEnclosure(Rectangle bounds)
     {
       this.bounds = bounds;
@@ -70,7 +74,15 @@ namespace BouncingBall
 
     private bool IsTouching(ISprite sprite)
     {
-      return !bounds.Contains(sprite.BoundingBox);
+      // cannot use Rectangle.contains, it misses the case where the we are just touching, i.e. x = 0 etc.
+      if (sprite.BoundingBox.Left <= bounds.Left ||
+          sprite.BoundingBox.Right >= bounds.Right ||
+          sprite.BoundingBox.Bottom >= bounds.Bottom ||
+          sprite.BoundingBox.Top <= bounds.Top)
+
+        return true;
+
+      return false;
     }
 
     /// <summary>
@@ -93,6 +105,8 @@ namespace BouncingBall
       if (boundingBox.Bottom >= bounds.Bottom) // touching top wall
         normal += new Vector2(0, 1);
 
+      normal.Normalize();
+
       return normal; 
     }
   }
@@ -101,11 +115,24 @@ namespace BouncingBall
   {
     public Vector2 Position { get; set; }
     public int Speed { get; set; }
-    public Vector2 Velocity { get; set; }
+
+    private Vector2 velocity;
+    public Vector2 Velocity 
+    {
+      get
+      {
+        return velocity;
+      }
+      set
+      {
+        velocity = value;
+      }
+    }
+    
     public IEnclosure MovementBounds { get; private set; } // ennclosure
     public int Mass { get; private set; }
 
-    protected Texture2D Image { get; private set; }
+    public Texture2D Image { get; private set; }
     protected float Radius { get; private set; }
 
     protected List<ISprite> AllSprites { get; private set; }
@@ -114,8 +141,8 @@ namespace BouncingBall
     { 
       get
       {
-        var x = Position.X + Radius;
-        var y = Position.Y + Radius;
+        var x = Position.X + Image.Width / 2;
+        var y = Position.Y + Image.Height / 2;
 
         return new Vector2(x, y);
       }
@@ -125,7 +152,7 @@ namespace BouncingBall
     { 
       get
       {
-        var r = new Rectangle((int)Position.X, (int)Position.Y ,(int)(Radius * 2),(int)(Radius * 2));
+        var r = new Rectangle((int)Position.X, (int)Position.Y, this.Image.Width, this.Image.Height);
         return r;
       }
     } 
@@ -138,6 +165,17 @@ namespace BouncingBall
       this.Radius = image.Width / 2;
       this.Mass = mass;
       this.AllSprites = allSprites;
+    }
+
+    private bool IsTouching(ISprite another)
+    {
+      var distance = (this.Center - ((Ball)another).Center).Length();
+      var r1 = this.BoundingBox.Width / 2;
+      var r2 = another.BoundingBox.Width / 2;
+
+      return (distance <= (r1 + r2));
+
+      //return ((this.Center - ((Ball)another).Center).Length() <= (this.Radius + ((Ball)another).Radius));
     }
 
     public void CheckCollision(ISprite another)
@@ -164,8 +202,7 @@ namespace BouncingBall
        * Vaf = Van' + Vat
        * Vbf = Vbn' + Vbt
        */
-
-      if ((this.Center - ((Ball)another).Center).Length() > (this.Radius + ((Ball)another).Radius))
+      if (!IsTouching(another))
         return;
 
       var va = this.Velocity;
@@ -196,7 +233,7 @@ namespace BouncingBall
       var vbf = vbn_ + vbt;
 
       this.Velocity = vaf;
-      another.Velocity = vbf;
+     another.Velocity = vbf;
     }
 
     public void CheckCollisionWithEnclosure()
@@ -236,10 +273,17 @@ namespace BouncingBall
         CheckCollision(sprite);
       }
       CheckCollisionWithEnclosure();
-      this.Position += Velocity * (float)gametime.ElapsedGameTime.TotalSeconds;
+      Position += Velocity * (float)gametime.ElapsedGameTime.TotalSeconds;
+
+      // Do some boundary checking to ensure that we do not move out of the window
+      float x = Position.X;
+      float y = Position.Y;
+      if (Position.X < 0) x = 0;
+      if (Position.Y < 0) y = 0;
+      if (Position.X + Image.Width > MovementBounds.Width) x = MovementBounds.Width - Image.Width;
+      if (Position.Y + Image.Height > MovementBounds.Height) y = MovementBounds.Height - Image.Height;
+      Position = new Vector2(x, y);
     }
   }
-
-
-
 }
+
