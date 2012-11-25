@@ -24,15 +24,6 @@ namespace BouncingBall
 
     public override void Update(GameTime gametime)
     {
-      Position += Velocity * (float)gametime.ElapsedGameTime.TotalSeconds;
-      // Do some boundary checking to ensure that we do not move out of the window
-      float x = Position.X;
-      float y = Position.Y;
-      if (Position.X < 0) x = 0;
-      if (Position.Y < 0) y = 0;
-      if (Position.X + Image.Width > MovementBounds.Width) x = MovementBounds.Width - Image.Width;
-      if (Position.Y + Image.Height > MovementBounds.Height) y = MovementBounds.Height - Image.Height;
-      Position = new Vector2(x, y);
     }
   }
 }

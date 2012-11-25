@@ -49,6 +49,8 @@ namespace BouncingBall
     /// </summary>
     protected override void LoadContent()
     {
+      //this.Window.AllowUserResizing = true;
+
       // Create a new SpriteBatch, which can be used to draw textures.
       spriteBatch = new SpriteBatch(GraphicsDevice);
 
@@ -58,11 +60,20 @@ namespace BouncingBall
       var windowWidth = graphics.GraphicsDevice.Viewport.Width;
       var windowHeight = graphics.GraphicsDevice.Viewport.Height;
       
-      var enemyGlassBall = new Enemy(Content.Load<Texture2D>("glassBall"), new Vector2(graphics.GraphicsDevice.Viewport.X, graphics.GraphicsDevice.Viewport.Y), graphics.GraphicsDevice.Viewport.Bounds, 150, 3);
-      var enemyHollowBall = new Enemy(Content.Load<Texture2D>("hollowBall"), new Vector2(windowWidth / 2, windowHeight / 2), graphics.GraphicsDevice.Viewport.Bounds, 200, 1);
+      var enemyGlassBall = new Enemy(Content.Load<Texture2D>("glassBall"), new Vector2(0,0), graphics.GraphicsDevice.Viewport.Bounds, 150, 3);
+
+      var enemyHollowBall1 = new Enemy(Content.Load<Texture2D>("hollowBall"), new Vector2(windowWidth / 2, windowHeight / 2), graphics.GraphicsDevice.Viewport.Bounds, 300, 1);
+      var enemyHollowBall2 = new Enemy(Content.Load<Texture2D>("hollowBall"), new Vector2(windowWidth / 2, 0), graphics.GraphicsDevice.Viewport.Bounds, 300, 3);
+      var enemyHollowBall3 = new Enemy(Content.Load<Texture2D>("hollowBall"), new Vector2(0, windowHeight / 2), graphics.GraphicsDevice.Viewport.Bounds, 300, 4);
+      
+      var playerImage = Content.Load<Texture2D>("playerBall");
+      var playerBall = new Player(playerImage, new Vector2(windowWidth / 2, windowHeight - playerImage.Height - 10), graphics.GraphicsDevice.Viewport.Bounds, 150, 10);
 
       sprites.Add(enemyGlassBall);
-      sprites.Add(enemyHollowBall);
+      sprites.Add(enemyHollowBall1);
+      sprites.Add(enemyHollowBall2);
+      sprites.Add(enemyHollowBall3);
+      sprites.Add(playerBall);
 
       collisionManager = new CollisionManager(sprites, graphics.GraphicsDevice.Viewport.Bounds, soundManager);
 
@@ -84,6 +95,10 @@ namespace BouncingBall
     /// <param name="gameTime">Provides a snapshot of timing values.</param>
     protected override void Update(GameTime gameTime)
     {
+      foreach (var sprite in sprites)
+      {
+        sprite.Update(gameTime);
+      }
       collisionManager.Update(gameTime);
     }
 

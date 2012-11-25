@@ -4,10 +4,11 @@ using System.Linq;
 using System.Text;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
+using Microsoft.Xna.Framework.Input;
 
 namespace BouncingBall
 {
-  public class Ball : ISprite
+  public abstract class Ball : ISprite
   {
     public Vector2 Position { get; set; }
     public int Speed { get; set; }
@@ -68,10 +69,8 @@ namespace BouncingBall
       spriteBatch.Draw(this.Image, this.Position, Color.White);
     }
 
-    public virtual void Update(GameTime gameTime)
-    {
-
-    }
-
+    public abstract void Update(GameTime gameTime);
+    
   }
+
 }
