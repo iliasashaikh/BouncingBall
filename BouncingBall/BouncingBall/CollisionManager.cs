@@ -8,7 +8,7 @@ namespace BouncingBall
 {
   public interface ICollisionManager
   {
-    void Update();
+    void Update(GameTime gameTime);
   }
 
   public class CollisionManager
@@ -26,16 +26,18 @@ namespace BouncingBall
 
     List<Tuple<int, int>> pairs = new List<Tuple<int, int>>();
 
-    public void Update()
+    protected internal void Update(GameTime gameTime)
     {
+      pairs.Clear();
       // check the collisons amongst all the sprites
       for (int i = 0; i < sprites.Count; i++)
       {
         for (int j = 0; j < sprites.Count; j++)
         {
-          if (!PairsTested(i, j))
+          if (!PairsTested(i, j) && i!=j)
           {
             CheckCollision(sprites[i], sprites[j]);
+            pairs.Add(new Tuple<int,int>(i, j));
           }
         }
       }
@@ -43,7 +45,18 @@ namespace BouncingBall
       // now check for collisons with the walls
       for (int i = 0; i < sprites.Count; i++)
       {
+        ISprite sprite = sprites[i];
         CheckCollision(sprites[i], bounds);
+        sprite.Position += sprite.Velocity * (float)gameTime.ElapsedGameTime.TotalSeconds;
+        // Do some boundary checking to ensure that we do not move out of the window
+        float x = sprite.Position.X;
+        float y = sprite.Position.Y;
+        if (sprite.Position.X < 0) x = 0;
+        if (sprite.Position.Y < 0) y = 0;
+        if (sprite.Position.X + sprite.Image.Width > sprite.MovementBounds.Width) x = sprite.MovementBounds.Width - sprite.Image.Width;
+        if (sprite.Position.Y + sprite.Image.Height > sprite.MovementBounds.Height) y = sprite.MovementBounds.Height - sprite.Image.Height;
+        
+        sprite.Position = new Vector2(x, y);
       }
     }
 

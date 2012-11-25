@@ -16,12 +16,12 @@ namespace BouncingBall
   /// </summary>
   public class Game1 : Microsoft.Xna.Framework.Game
   {
+    private CollisionManager collisionManager = null;
     GraphicsDeviceManager graphics;
     SpriteBatch spriteBatch;
 
     List<ISprite> sprites = new List<ISprite>();
 
-    RectangleEnclosure enclosure = null;
     private SoundManager soundManager;
 
     public Game1()
@@ -54,15 +54,18 @@ namespace BouncingBall
 
       soundManager = new SoundManager(Content);
       soundManager.Play(Sound.Background);
+
       var windowWidth = graphics.GraphicsDevice.Viewport.Width;
       var windowHeight = graphics.GraphicsDevice.Viewport.Height;
       
-      enclosure = new RectangleEnclosure(graphics.GraphicsDevice.Viewport.Bounds);
-      var enemyGlassBall = new Enemy(Content.Load<Texture2D>("glassBall"), new Vector2(graphics.GraphicsDevice.Viewport.X, graphics.GraphicsDevice.Viewport.Y), enclosure, 150, 3, sprites);
-      var enemyHollowBall = new Enemy(Content.Load<Texture2D>("hollowBall"), new Vector2(windowWidth / 2, windowHeight / 2), enclosure, 200, 1, sprites);
+      var enemyGlassBall = new Enemy(Content.Load<Texture2D>("glassBall"), new Vector2(graphics.GraphicsDevice.Viewport.X, graphics.GraphicsDevice.Viewport.Y), graphics.GraphicsDevice.Viewport.Bounds, 150, 3);
+      var enemyHollowBall = new Enemy(Content.Load<Texture2D>("hollowBall"), new Vector2(windowWidth / 2, windowHeight / 2), graphics.GraphicsDevice.Viewport.Bounds, 200, 1);
 
       sprites.Add(enemyGlassBall);
       sprites.Add(enemyHollowBall);
+
+      collisionManager = new CollisionManager(sprites, graphics.GraphicsDevice.Viewport.Bounds, soundManager);
+
     }
 
     /// <summary>
@@ -81,13 +84,7 @@ namespace BouncingBall
     /// <param name="gameTime">Provides a snapshot of timing values.</param>
     protected override void Update(GameTime gameTime)
     {
-      foreach (var sprite in sprites)
-      {
-        var enemy = sprite as IAiSprite;
-        if (enemy != null) { }
-          enemy.Move(gameTime);
-      }
-      base.Update(gameTime);
+      collisionManager.Update(gameTime);
     }
 
     /// <summary>

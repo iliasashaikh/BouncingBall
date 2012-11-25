@@ -47,10 +47,10 @@ namespace BouncingBall
             MediaPlayer.IsRepeating = true;
             break;
           case Sound.Bounce:
-            bounce.Play();
+            bounce.Play(0.1f,0,0);
             break;
           case Sound.Collide:
-            collide.Play();
+            collide.Play(0.5f, 0, 0);
             break;
           case Sound.Hurt:
             hurt.Play();
