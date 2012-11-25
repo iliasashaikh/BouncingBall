@@ -32,10 +32,10 @@ namespace BouncingBall
     public SoundManager(ContentManager content)
     {
       this.content = content;
-      this.background = content.Load<Song>(@"Sounds\background");
-      this.hurt = content.Load<SoundEffect>(@"Sounds\hurt");
-      this.bounce = content.Load<SoundEffect>(@"Sounds\bounce");
-      this.collide = content.Load<SoundEffect>(@"Sounds\collide");
+      this.background = content.Load<Song>(@"sounds\background");
+      this.hurt = content.Load<SoundEffect>(@"sounds\hurt");
+      this.bounce = content.Load<SoundEffect>(@"sounds\bounce");
+      this.collide = content.Load<SoundEffect>(@"sounds\collide");
     }
 
     public void Play(Sound sound)

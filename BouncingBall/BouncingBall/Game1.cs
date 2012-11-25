@@ -16,6 +16,7 @@ namespace BouncingBall
   /// </summary>
   public class Game1 : Microsoft.Xna.Framework.Game
   {
+    private Texture2D background;
     private CollisionManager collisionManager = null;
     GraphicsDeviceManager graphics;
     SpriteBatch spriteBatch;
@@ -60,19 +61,21 @@ namespace BouncingBall
       var windowWidth = graphics.GraphicsDevice.Viewport.Width;
       var windowHeight = graphics.GraphicsDevice.Viewport.Height;
       
-      var enemyGlassBall = new Enemy(Content.Load<Texture2D>("glassBall"), new Vector2(0,0), graphics.GraphicsDevice.Viewport.Bounds, 150, 3);
+      background = Content.Load<Texture2D>(@"images\background");
 
-      var enemyHollowBall1 = new Enemy(Content.Load<Texture2D>("hollowBall"), new Vector2(windowWidth / 2, windowHeight / 2), graphics.GraphicsDevice.Viewport.Bounds, 300, 1);
-      var enemyHollowBall2 = new Enemy(Content.Load<Texture2D>("hollowBall"), new Vector2(windowWidth / 2, 0), graphics.GraphicsDevice.Viewport.Bounds, 300, 3);
-      var enemyHollowBall3 = new Enemy(Content.Load<Texture2D>("hollowBall"), new Vector2(0, windowHeight / 2), graphics.GraphicsDevice.Viewport.Bounds, 300, 4);
+      var greenBall = new Enemy(Content.Load<Texture2D>(@"images\green"), new Vector2(0, 0), graphics.GraphicsDevice.Viewport.Bounds, 150, 3);
+      var peacockBall = new Enemy(Content.Load<Texture2D>(@"images\peacock"), new Vector2(windowWidth / 2, windowHeight / 2), graphics.GraphicsDevice.Viewport.Bounds, 300, 1);
+      var pinkBall = new Enemy(Content.Load<Texture2D>(@"images\pink"), new Vector2(windowWidth / 2, 0), graphics.GraphicsDevice.Viewport.Bounds, 300, 3);
+      var yellowBall = new Enemy(Content.Load<Texture2D>(@"images\yellow"), new Vector2(0, windowHeight / 2), graphics.GraphicsDevice.Viewport.Bounds, 300, 4);
       
-      var playerImage = Content.Load<Texture2D>("playerBall");
+      var playerImage = Content.Load<Texture2D>(@"images\player");
       var playerBall = new Player(playerImage, new Vector2(windowWidth / 2, windowHeight - playerImage.Height - 10), graphics.GraphicsDevice.Viewport.Bounds, 150, 10);
 
-      sprites.Add(enemyGlassBall);
-      sprites.Add(enemyHollowBall1);
-      sprites.Add(enemyHollowBall2);
-      sprites.Add(enemyHollowBall3);
+      sprites.Add(greenBall);
+      sprites.Add(peacockBall);
+      sprites.Add(pinkBall);
+      sprites.Add(yellowBall);
+
       sprites.Add(playerBall);
 
       collisionManager = new CollisionManager(sprites, graphics.GraphicsDevice.Viewport.Bounds, soundManager);
@@ -111,6 +114,7 @@ namespace BouncingBall
       GraphicsDevice.Clear(Color.CornflowerBlue);
 
       spriteBatch.Begin();
+      spriteBatch.Draw(background, graphics.GraphicsDevice.Viewport.Bounds, Color.White);
       foreach (var sprite in sprites)
       {
         sprite.Draw(spriteBatch);
