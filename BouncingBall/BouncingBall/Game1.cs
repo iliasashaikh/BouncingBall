@@ -22,6 +22,7 @@ namespace BouncingBall
     List<ISprite> sprites = new List<ISprite>();
 
     RectangleEnclosure enclosure = null;
+    private SoundManager soundManager;
 
     public Game1()
     {
@@ -50,6 +51,9 @@ namespace BouncingBall
     {
       // Create a new SpriteBatch, which can be used to draw textures.
       spriteBatch = new SpriteBatch(GraphicsDevice);
+
+      soundManager = new SoundManager(Content);
+      soundManager.Play(Sound.Background);
       var windowWidth = graphics.GraphicsDevice.Viewport.Width;
       var windowHeight = graphics.GraphicsDevice.Viewport.Height;
       

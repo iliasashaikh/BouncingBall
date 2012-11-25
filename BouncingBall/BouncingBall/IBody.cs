@@ -19,6 +19,7 @@ namespace BouncingBall
 
   public interface ISprite : IBody
   {
+    Vector2 Center { get; }
     Texture2D Image { get;  }
     Vector2 Position { get; set; }
     Vector2 Velocity { get; set; }
@@ -137,7 +138,7 @@ namespace BouncingBall
 
     protected List<ISprite> AllSprites { get; private set; }
 
-    protected Vector2 Center 
+    public Vector2 Center 
     { 
       get
       {
