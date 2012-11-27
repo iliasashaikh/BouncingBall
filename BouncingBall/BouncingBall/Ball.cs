@@ -10,6 +10,8 @@ namespace BouncingBall
 {
   public abstract class Ball : ISprite
   {
+    protected internal static Random Random = new Random();
+
     public Vector2 Position { get; set; }
     public int Speed { get; set; }
 
@@ -64,7 +66,7 @@ namespace BouncingBall
     }
 
 
-    public void Draw(SpriteBatch spriteBatch)
+    public virtual void Draw(SpriteBatch spriteBatch)
     {
       spriteBatch.Draw(this.Image, this.Position, Color.White);
     }

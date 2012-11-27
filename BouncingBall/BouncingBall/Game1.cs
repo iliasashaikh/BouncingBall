@@ -18,10 +18,12 @@ namespace BouncingBall
   {
     private Texture2D background;
     private CollisionManager collisionManager = null;
+    private BubbleManager bubbleManager;
     GraphicsDeviceManager graphics;
+    private Player playerBall;
     SpriteBatch spriteBatch;
 
-    List<ISprite> sprites = new List<ISprite>();
+    //List<ISprite> sprites = new List<ISprite>();
 
     private SoundManager soundManager;
 
@@ -58,27 +60,26 @@ namespace BouncingBall
       soundManager = new SoundManager(Content);
       soundManager.Play(Sound.Background);
 
+      bubbleManager = new BubbleManager(Content, graphics.GraphicsDevice.Viewport.Bounds);
+
       var windowWidth = graphics.GraphicsDevice.Viewport.Width;
       var windowHeight = graphics.GraphicsDevice.Viewport.Height;
       
       background = Content.Load<Texture2D>(@"images\background");
 
-      var greenBall = new Enemy(Content.Load<Texture2D>(@"images\green"), new Vector2(0, 0), graphics.GraphicsDevice.Viewport.Bounds, 150, 3);
-      var peacockBall = new Enemy(Content.Load<Texture2D>(@"images\peacock"), new Vector2(windowWidth / 2, windowHeight / 2), graphics.GraphicsDevice.Viewport.Bounds, 300, 1);
-      var pinkBall = new Enemy(Content.Load<Texture2D>(@"images\pink"), new Vector2(windowWidth / 2, 0), graphics.GraphicsDevice.Viewport.Bounds, 300, 3);
-      var yellowBall = new Enemy(Content.Load<Texture2D>(@"images\yellow"), new Vector2(0, windowHeight / 2), graphics.GraphicsDevice.Viewport.Bounds, 300, 4);
-      
+            
       var playerImage = Content.Load<Texture2D>(@"images\player");
-      var playerBall = new Player(playerImage, new Vector2(windowWidth / 2, windowHeight - playerImage.Height - 10), graphics.GraphicsDevice.Viewport.Bounds, 150, 10);
+      playerBall = new Player(playerImage, new Vector2(windowWidth / 2, windowHeight - playerImage.Height - 10), graphics.GraphicsDevice.Viewport.Bounds, 150, 10);
 
-      sprites.Add(greenBall);
-      sprites.Add(peacockBall);
-      sprites.Add(pinkBall);
-      sprites.Add(yellowBall);
+      bubbleManager.MakeBubble(Color.Yellow);
+      bubbleManager.MakeBubble(Color.White);
+      bubbleManager.MakeBubble(Color.Black);
+      bubbleManager.MakeBubble(Color.Brown);
 
+      var sprites = new List<ISprite>();
       sprites.Add(playerBall);
-
-      collisionManager = new CollisionManager(sprites, graphics.GraphicsDevice.Viewport.Bounds, soundManager);
+      sprites.AddRange(bubbleManager.Bubbles);
+      collisionManager = new CollisionManager(sprites, graphics.GraphicsDevice.Viewport.Bounds, soundManager,bubbleManager);
 
     }
 
@@ -98,11 +99,30 @@ namespace BouncingBall
     /// <param name="gameTime">Provides a snapshot of timing values.</param>
     protected override void Update(GameTime gameTime)
     {
-      foreach (var sprite in sprites)
-      {
-        sprite.Update(gameTime);
-      }
+      playerBall.Update(gameTime);
       collisionManager.Update(gameTime);
+      bubbleManager.Update(gameTime);
+
+      // var bubbles = bubbleManager.Bubbles;
+      // check if the player has touched any enemies, if hit the enemies disappear
+      for (int i = 0; i < bubbleManager.Bubbles.Count; i++)
+      {
+        var bubble = bubbleManager.Bubbles[i];
+        if (bubble.IsHit)
+        {
+          bubbleManager.Pop(bubble);
+          collisionManager.RemoveCollidable(bubble);
+        }
+        //if (bubble.HasHitWall)
+        //{
+        //  var newBubble = bubbleManager.MakeBubble(bubble.Color);
+        //  collisionManager.AddCollidable(newBubble);
+        //  bubble.HasHitWall = false;
+        //  newBubble.HasHitWall = false;
+        //}
+      }
+
+      
     }
 
     /// <summary>
@@ -114,11 +134,11 @@ namespace BouncingBall
       GraphicsDevice.Clear(Color.CornflowerBlue);
 
       spriteBatch.Begin();
+
       spriteBatch.Draw(background, graphics.GraphicsDevice.Viewport.Bounds, Color.White);
-      foreach (var sprite in sprites)
-      {
-        sprite.Draw(spriteBatch);
-      }
+      playerBall.Draw(spriteBatch);
+      bubbleManager.Draw(spriteBatch);
+
       spriteBatch.End();
 
       

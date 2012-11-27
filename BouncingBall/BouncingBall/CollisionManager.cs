@@ -13,18 +13,30 @@ namespace BouncingBall
 
   public class CollisionManager
   {
+    private readonly BubbleManager bubbleManager;
     SoundManager soundManager;
     IList<ISprite> sprites;
     Rectangle bounds;
 
-    public CollisionManager(List<ISprite> sprites, Rectangle bounds, SoundManager soundManager)
+    public CollisionManager(List<ISprite> sprites, Rectangle bounds, SoundManager soundManager, BubbleManager bubbleManager)
     {
+      this.bubbleManager = bubbleManager;
       this.soundManager = soundManager;
       this.sprites = sprites;
       this.bounds = bounds;
     }
 
     List<Tuple<int, int>> pairs = new List<Tuple<int, int>>();
+
+    public void AddCollidable(ISprite sprite)
+    {
+      sprites.Add(sprite);
+    }
+
+    public void RemoveCollidable(Bubble bubble)
+    {
+      sprites.Remove(bubble);
+    }
 
     protected internal void Update(GameTime gameTime)
     {
@@ -47,16 +59,16 @@ namespace BouncingBall
       {
         ISprite sprite = sprites[i];
         CheckCollision(sprites[i], bounds);
-        sprite.Position += sprite.Velocity * (float)gameTime.ElapsedGameTime.TotalSeconds;
-        // Do some boundary checking to ensure that we do not move out of the window
-        float x = sprite.Position.X;
-        float y = sprite.Position.Y;
-        if (sprite.Position.X < 0) x = 0;
-        if (sprite.Position.Y < 0) y = 0;
-        if (sprite.Position.X + sprite.Image.Width > sprite.MovementBounds.Width) x = sprite.MovementBounds.Width - sprite.Image.Width;
-        if (sprite.Position.Y + sprite.Image.Height > sprite.MovementBounds.Height) y = sprite.MovementBounds.Height - sprite.Image.Height;
+        //sprite.Position += sprite.Velocity * (float)gameTime.ElapsedGameTime.TotalSeconds;
+        //// Do some boundary checking to ensure that we do not move out of the window
+        //float x = sprite.Position.X;
+        //float y = sprite.Position.Y;
+        //if (sprite.Position.X < 0) x = 0;
+        //if (sprite.Position.Y < 0) y = 0;
+        //if (sprite.Position.X + sprite.Image.Width > sprite.MovementBounds.Width) x = sprite.MovementBounds.Width - sprite.Image.Width;
+        //if (sprite.Position.Y + sprite.Image.Height > sprite.MovementBounds.Height) y = sprite.MovementBounds.Height - sprite.Image.Height;
         
-        sprite.Position = new Vector2(x, y);
+        //sprite.Position = new Vector2(x, y);
       }
     }
 
@@ -80,8 +92,20 @@ namespace BouncingBall
       var r2 = sprite2.BoundingBox.Width / 2;
 
       var touching =  (distance <= (r1 + r2));
+
       if (touching)
-        soundManager.Play(Sound.Collide);
+      {
+        if (sprite1 is Bubble && sprite2 is Bubble)
+          soundManager.Play(Sound.Collide);
+        else if (sprite1 is Bubble && sprite2 is Player)
+        {
+          (sprite1 as Bubble).IsHit = true;          
+        }
+        else if (sprite1 is Player && sprite2 is Bubble)
+        {
+          (sprite2 as Bubble).IsHit = true;          
+        }
+      }
 
       return touching;
     }
@@ -164,6 +188,13 @@ namespace BouncingBall
           sprite.BoundingBox.Top <= bounds.Top)
       {
         soundManager.Play(Sound.Bounce);
+        var bubble = sprite as Bubble;
+        if (bubble != null && !bubble.HasHitWall)
+        {
+          bubble.HasHitWall = true;
+          var newBubble = bubbleManager.MakeBubble(bubble.Color);
+          sprites.Add(newBubble);
+        }
         return true;
       }
       return false;

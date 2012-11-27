@@ -10,6 +10,7 @@ namespace BouncingBall
 {
   public class Player : Ball
   {
+    private Vector2 userVelocity;
     private Dictionary<Keys, Vector2> moveLookup;
 
     public Player(Texture2D image, Vector2 initialPosition, Rectangle bounds, int speed, int mass)
@@ -25,24 +26,30 @@ namespace BouncingBall
       this.Speed = speed;
     }
 
+    
+
     public override void Update(GameTime gameTime)
     {
-      var direction = Vector2.Zero;
-            
+      userVelocity = Vector2.Zero;
+
       var keyboardState = Keyboard.GetState();
       if (keyboardState.GetPressedKeys().Count() > 0)
       {
         foreach (var key in moveLookup.Keys)
         {
           if (keyboardState.IsKeyDown(key))
-            direction += moveLookup[key];
+            userVelocity += moveLookup[key];
         }
-
-        Velocity = Speed * direction;
+            
+        Velocity = Speed * userVelocity;
       }
 
       Position += Velocity * (float)gameTime.ElapsedGameTime.TotalSeconds;
+    }
 
+    public override void Draw(SpriteBatch spriteBatch)
+    {
+      base.Draw(spriteBatch);
     }
   }
 }

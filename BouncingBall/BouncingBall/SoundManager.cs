@@ -40,22 +40,22 @@ namespace BouncingBall
 
     public void Play(Sound sound)
     {
-        switch(sound)
-        {
-          case Sound.Background:
-            MediaPlayer.Play(background);
-            MediaPlayer.IsRepeating = true;
-            break;
-          case Sound.Bounce:
-            bounce.Play(0.1f,0,0);
-            break;
-          case Sound.Collide:
-            //collide.Play(0.5f, 0, 0);
-            break;
-          case Sound.Hurt:
-            hurt.Play();
-            break;
-        }
+      switch (sound)
+      {
+        case Sound.Background:
+          MediaPlayer.Play(background);
+          MediaPlayer.IsRepeating = true;
+          break;
+        case Sound.Bounce:
+          bounce.Play(0.1f, 0, 0);
+          break;
+        case Sound.Collide:
+          //collide.Play(0.5f, 0, 0);
+          break;
+        case Sound.Hurt:
+          hurt.Play();
+          break;
+      }
       
     }
   }
