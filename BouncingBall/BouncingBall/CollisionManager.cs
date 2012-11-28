@@ -48,8 +48,37 @@ namespace BouncingBall
         {
           if (!PairsTested(i, j) && i!=j)
           {
-            CheckCollision(sprites[i], sprites[j]);
+            float overlapTime = 0f;
+
+            var origVelocity1 = sprites[i].Velocity;
+            var origVelocity2 = sprites[j].Velocity;
+
+            CheckCollision(sprites[i], sprites[j], out overlapTime);
             pairs.Add(new Tuple<int,int>(i, j));
+
+            if (overlapTime > 0)
+            {
+              // set the position of both sprites to before point of collision.
+              sprites[i].Position -= origVelocity1 * (float)gameTime.ElapsedGameTime.TotalSeconds;
+              sprites[j].Position -= origVelocity2 * (float)gameTime.ElapsedGameTime.TotalSeconds;
+
+              var totalTimeAfterCollision = (float)gameTime.ElapsedGameTime.TotalSeconds + overlapTime;
+
+              sprites[i].Position += sprites[i].Velocity * totalTimeAfterCollision;
+              sprites[j].Position += sprites[j].Velocity * totalTimeAfterCollision;
+
+              var bubble1 = sprites[i] as Bubble;
+              var bubble2 = sprites[j] as Bubble;
+
+              if (bubble1 !=null)
+                bubble1.HasCollided = true;
+              if (bubble2 != null)
+                bubble2.HasCollided = true;
+            }
+            else
+            {
+             
+            }
           }
         }
       }
@@ -58,7 +87,10 @@ namespace BouncingBall
       for (int i = 0; i < sprites.Count; i++)
       {
         ISprite sprite = sprites[i];
+        var origVelocity = sprite.Velocity;
         CheckCollision(sprites[i], bounds);
+        
+        // original position before the collision
         //sprite.Position += sprite.Velocity * (float)gameTime.ElapsedGameTime.TotalSeconds;
         //// Do some boundary checking to ensure that we do not move out of the window
         //float x = sprite.Position.X;
@@ -85,32 +117,35 @@ namespace BouncingBall
       return false;
     }
 
-    private bool IsTouching(ISprite sprite1, ISprite sprite2)
+    private bool IsTouching(ISprite sprite1, ISprite sprite2, out float overlap)
     {
       var distance = (sprite1.Center - sprite2.Center).Length();
       var r1 = sprite1.BoundingBox.Width / 2;
       var r2 = sprite2.BoundingBox.Width / 2;
 
+      overlap = (r1 + r2) - (distance);
       var touching =  (distance <= (r1 + r2));
 
       if (touching)
       {
         if (sprite1 is Bubble && sprite2 is Bubble)
+        {
           soundManager.Play(Sound.Collide);
+        }
         else if (sprite1 is Bubble && sprite2 is Player)
         {
-          (sprite1 as Bubble).IsHit = true;          
+          ((Bubble)sprite1).IsHit = true;
         }
         else if (sprite1 is Player && sprite2 is Bubble)
         {
-          (sprite2 as Bubble).IsHit = true;          
+          ((Bubble)sprite2).IsHit = true;
         }
       }
 
       return touching;
     }
 
-    private void CheckCollision(ISprite sprite1, ISprite sprite2)
+    private void CheckCollision(ISprite sprite1, ISprite sprite2, out float overlapTime)
     {
       /*
       * calculation (ref - http://en.wikipedia.org/wiki/Elastic_collision, http://www.vobarian.com/collisions/2dcollisions2.pdf)
@@ -134,7 +169,10 @@ namespace BouncingBall
       * Vaf = Van' + Vat
       * Vbf = Vbn' + Vbt
       */
-      if (!IsTouching(sprite1, sprite2))
+      float overlap = 0f;
+      overlapTime = 0;
+
+      if (!IsTouching(sprite1, sprite2, out overlap))
         return;
 
       var va = sprite1.Velocity;
@@ -166,6 +204,20 @@ namespace BouncingBall
 
       sprite1.Velocity = vaf;
       sprite2.Velocity = vbf;
+
+      if (overlap > 0)
+      {
+        // we need to compute the total time(t) the sprites travelled after colliding and before we knew about it.
+        // we know the overlap distance and we know the velocities along the collision normal
+        // (overlap - da) / Van = (overLap - db) / Vbn
+        // da + db = overlap
+        
+        // solving the equations we get 
+        // t = (overlap * Van) / (Van + Vbn) * (1 / Vbn)
+
+        overlapTime = (overlap * van) / (van + vbn) * (1 / vbn);
+      }
+
     }
 
     private void CheckCollision(ISprite sprite, Rectangle bounds)
@@ -188,13 +240,27 @@ namespace BouncingBall
           sprite.BoundingBox.Top <= bounds.Top)
       {
         soundManager.Play(Sound.Bounce);
-        var bubble = sprite as Bubble;
-        if (bubble != null && !bubble.HasHitWall)
+
+        var ball = sprite as Ball;
+        if (ball!=null)
         {
-          bubble.HasHitWall = true;
-          var newBubble = bubbleManager.MakeBubble(bubble.Color);
-          sprites.Add(newBubble);
+          ball.HasHitWall = true;
         }
+
+        var bubble = sprite as Bubble;
+        //if (bubble != null && !bubble.HasHitWall)
+        if (bubble != null)
+        {
+          // if a bubble hits the wall, make another one
+          var newBubble = bubbleManager.MakeBubble(bubble.Color);
+
+          // the bubble manager can choose to not add another bubble, so the null guard
+          if (newBubble != null)
+          {
+            sprites.Add(newBubble);
+          }
+        }
+        
         return true;
       }
       return false;

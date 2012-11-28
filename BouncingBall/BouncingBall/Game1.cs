@@ -60,7 +60,7 @@ namespace BouncingBall
       soundManager = new SoundManager(Content);
       soundManager.Play(Sound.Background);
 
-      bubbleManager = new BubbleManager(Content, graphics.GraphicsDevice.Viewport.Bounds);
+      bubbleManager = new BubbleManager(Content, graphics.GraphicsDevice.Viewport.Bounds, 15);
 
       var windowWidth = graphics.GraphicsDevice.Viewport.Width;
       var windowHeight = graphics.GraphicsDevice.Viewport.Height;
@@ -68,13 +68,13 @@ namespace BouncingBall
       background = Content.Load<Texture2D>(@"images\background");
 
             
-      var playerImage = Content.Load<Texture2D>(@"images\player");
-      playerBall = new Player(playerImage, new Vector2(windowWidth / 2, windowHeight - playerImage.Height - 10), graphics.GraphicsDevice.Viewport.Bounds, 150, 10);
+      var playerImage = Content.Load<Texture2D>(@"images\birdsheet");
+      playerBall = new Player(playerImage, new Vector2(windowWidth / 2, windowHeight - playerImage.Height - 10), graphics.GraphicsDevice.Viewport.Bounds, 0, 10, 2,2,14);
 
-      bubbleManager.MakeBubble(Color.Yellow);
-      bubbleManager.MakeBubble(Color.White);
-      bubbleManager.MakeBubble(Color.Black);
-      bubbleManager.MakeBubble(Color.Brown);
+      //bubbleManager.MakeBubble(Color.Yellow);
+      //bubbleManager.MakeBubble(Color.White);
+      //bubbleManager.MakeBubble(Color.Black);
+      //bubbleManager.MakeBubble(Color.Brown);
 
       var sprites = new List<ISprite>();
       sprites.Add(playerBall);
@@ -99,7 +99,7 @@ namespace BouncingBall
     /// <param name="gameTime">Provides a snapshot of timing values.</param>
     protected override void Update(GameTime gameTime)
     {
-      playerBall.Update(gameTime);
+      playerBall.UpdateCore(gameTime);
       collisionManager.Update(gameTime);
       bubbleManager.Update(gameTime);
 

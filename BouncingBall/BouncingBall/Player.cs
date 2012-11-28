@@ -13,8 +13,8 @@ namespace BouncingBall
     private Vector2 userVelocity;
     private Dictionary<Keys, Vector2> moveLookup;
 
-    public Player(Texture2D image, Vector2 initialPosition, Rectangle bounds, int speed, int mass)
-      : base(image, initialPosition, bounds, mass)
+    public Player(Texture2D image, Vector2 initialPosition, Rectangle bounds, int speed, int mass, int cols, int rows, int frameRate)
+      : base(image, initialPosition, bounds, mass, cols, rows, frameRate)
     {
       moveLookup = new Dictionary<Keys, Vector2> 
         {
@@ -31,25 +31,39 @@ namespace BouncingBall
     public override void Update(GameTime gameTime)
     {
       userVelocity = Vector2.Zero;
-
-      var keyboardState = Keyboard.GetState();
-      if (keyboardState.GetPressedKeys().Count() > 0)
+      // if player has hit a wall, we use the computed velocity from the collision manager, do not compute velocities from the keyboard, otherwise we will keep going outside the bounds
+      if (!HasHitWall)
       {
-        foreach (var key in moveLookup.Keys)
+        var keyboardState = Keyboard.GetState();
+        if (keyboardState.GetPressedKeys().Count() > 0)
         {
-          if (keyboardState.IsKeyDown(key))
-            userVelocity += moveLookup[key];
-        }
-            
-        Velocity = Speed * userVelocity;
-      }
+          foreach (var key in moveLookup.Keys)
+          {
+            if (keyboardState.IsKeyDown(key))
+              userVelocity += moveLookup[key];
+          }
 
+          Velocity = Speed * userVelocity;
+        }
+      }
       Position += Velocity * (float)gameTime.ElapsedGameTime.TotalSeconds;
+      
+      // reset hashitwall
+      HasHitWall = false;
     }
 
-    public override void Draw(SpriteBatch spriteBatch)
+    public override void Draw(SpriteBatch spriteBatch, float rotation = 0, Color? color = null)
     {
-      base.Draw(spriteBatch);
+      if (userVelocity == Vector2.Zero)
+        rotation = 0;
+      
+      if (userVelocity.X >= 1)
+        rotation = 180;
+
+      if (userVelocity.X == 0)
+        rotation = 0;
+
+      base.Draw(spriteBatch,rotation,null);
     }
   }
 }

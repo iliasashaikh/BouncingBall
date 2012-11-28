@@ -11,16 +11,17 @@ namespace BouncingBall
 
   public class BubbleManager
   {
-    //public List<Bubble> Bubbles { get; set; }
     private Rectangle bounds;
     public List<Bubble> Bubbles;
     private ContentManager content;
+    public int MaxBubbles { get; set; }
 
-    public BubbleManager(ContentManager content, Rectangle bounds)
+    public BubbleManager(ContentManager content, Rectangle bounds, int maxBubbles)
     {
       Bubbles = new List<Bubble>();
       this.content = content;
       this.bounds = bounds;
+      this.MaxBubbles = maxBubbles;
       //var greenBall = new Enemy(content.Load<Texture2D>(@"images\green"), new Vector2(0, 0), graphics.GraphicsDevice.Viewport.Bounds, 150, 3);
       //var peacockBall = new Enemy(content.Load<Texture2D>(@"images\peacock"), new Vector2(windowWidth / 2, windowHeight / 2), graphics.GraphicsDevice.Viewport.Bounds, 300, 1);
       //var pinkBall = new Enemy(content.Load<Texture2D>(@"images\pink"), new Vector2(windowWidth / 2, 0), graphics.GraphicsDevice.Viewport.Bounds, 300, 3);
@@ -29,9 +30,12 @@ namespace BouncingBall
 
     public Bubble MakeBubble(Color bubbleColor, Vector2? position = null, int speed = 0, int mass = 0)
     {
+      if (Bubbles.Count >= MaxBubbles)
+        return null;
+
       var image = content.Load<Texture2D>(@"images\bubble");
       var pos = (Vector2)(position ?? GetRandomPosition(image));
-      speed = speed == 0 ? 150 : speed;
+      speed = speed == 0 ? 50 : speed;
       mass = mass == 0 ? 1 : mass;
 
       var bubble = new Bubble(image, pos, bounds, speed, mass, bubbleColor);

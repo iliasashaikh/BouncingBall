@@ -20,7 +20,7 @@ namespace BouncingBall
     Rectangle MovementBounds { get; }
     Rectangle BoundingBox { get; }
 
-    void Draw(SpriteBatch spriteBatch);
+    //void Draw(SpriteBatch spriteBatch);
     void Update(GameTime gameTime);
   }
 }
